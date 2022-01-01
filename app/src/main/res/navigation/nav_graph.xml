@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_chrono">
+
+    <fragment
+        android:id="@+id/fragment_chrono"
+        android:name="com.beleavemebe.chrono.ui.ChronoFragment"
+        android:label="@string/chrono"
+        tools:layout="@layout/fragment_chrono" />
+    <fragment
+        android:id="@+id/fragment_diary"
+        android:name="com.beleavemebe.chrono.ui.DiaryFragment"
+        android:label="@string/diary"
+        tools:layout="@layout/fragment_diary" />
+</navigation>

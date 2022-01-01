@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">chrono</string>
+    <string name="diary">Diary</string>
+    <string name="chrono">Chrono</string>
+</resources>
