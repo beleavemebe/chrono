@@ -120,15 +120,17 @@ class ChronoAdapter(
     }
 
     private fun List<ChronoEntry>.toDisplayableList(): List<Displayable> {
-        val groupedByDate = this.groupBy { chronoEntry -> chronoEntry.determineCalendarDate() }
+        val groupedByDate: Map<Date, List<ChronoEntry>> =
+            this.groupBy { chronoEntry -> chronoEntry.determineCalendarDate() }
 
         return groupedByDate.keys.flatMap { date ->
             val section = mutableListOf<Displayable>()
 
             section += Displayable.DateHeader(date)
-            section += groupedByDate[date]?.map {
-                    chronoEntry -> Displayable.Entry(chronoEntry)
-            } ?: emptyList()
+            section += groupedByDate[date]
+                ?.sortedBy { it.date }
+                ?.map { Displayable.Entry(it) }
+                ?: emptyList()
 
             section
         }
