@@ -19,6 +19,6 @@ object ChronoRepository {
     )
 
     private fun parseDate(string: String): Date {
-        return SimpleDateFormat("dd.MM.yyyy HH:masm", Locale.UK).parse(string)!!
+        return SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.UK).parse(string)!!
     }
 }
