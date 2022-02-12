@@ -3,9 +3,9 @@
     <item
         android:id="@+id/fragment_chrono"
         android:icon="@drawable/ic_chrono"
-        android:title="" />
+        android:title="@string/chrono"/>
     <item
         android:id="@+id/fragment_diary"
         android:icon="@drawable/ic_diary"
-        android:title="" />
+        android:title="@string/diary"/>
 </menu>

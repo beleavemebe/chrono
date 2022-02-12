@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.ChronoFragment">
+    tools:context=".ui.chrono.ChronoFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chrono_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/list_item_chrono_entry"
-        app:stackFromEnd="true" />
+        app:stackFromEnd="true"
+        tools:listitem="@layout/list_item_chrono_entry" />
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_no_chronology"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/no_chronology"
+        android:visibility="invisible" />
 </FrameLayout>

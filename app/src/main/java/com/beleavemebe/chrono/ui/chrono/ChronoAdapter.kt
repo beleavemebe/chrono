@@ -1,19 +1,28 @@
-package com.beleavemebe.chrono.ui
+package com.beleavemebe.chrono.ui.chrono
 
-import android.graphics.Color
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.ColorRes
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.beleavemebe.chrono.R
 import com.beleavemebe.chrono.databinding.ListItemChronoEntryBinding
+import com.beleavemebe.chrono.databinding.ListItemDateHeaderBinding
 import com.beleavemebe.chrono.model.ChronoEntry
 import com.github.vipulasri.timelineview.TimelineView
-import com.beleavemebe.chrono.databinding.ListItemDateHeaderBinding
-import java.lang.IllegalArgumentException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
+
+private const val DATE_PATTERN = "EEE, dd MMM"
+private const val TIME_PATTERN = "HH:mm"
 
 class ChronoAdapter(
     entries: List<ChronoEntry>,
+    scope: CoroutineScope,
+    val onEntryClicked: (ChronoEntry) -> Unit,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private sealed class Displayable(val viewType: Int) {
         class Entry(val chronoEntry: ChronoEntry) : Displayable(VIEW_TYPE_CHRONO_ENTRY)
@@ -23,7 +32,9 @@ class ChronoAdapter(
     private val items = mutableListOf<Displayable>()
 
     init {
-        items.addAll(entries.toDisplayableList())
+        scope.launch(Dispatchers.Default) {
+            items.addAll(entries.toDisplayableList())
+        }
     }
 
     override fun getItemCount(): Int {
@@ -39,13 +50,13 @@ class ChronoAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val timelineViewType = viewType % DISPLAYABLE_VIEW_TYPE_MULTIPLE
+        val timelineViewType = viewType % DISPLAYABLE_VIEW_TYPE_MULTIPLIER
         val displayableViewType = viewType - timelineViewType
 
         return when (displayableViewType) {
             VIEW_TYPE_CHRONO_ENTRY -> createChronoHolder(inflater, parent, timelineViewType)
             VIEW_TYPE_DATE_HEADER -> createDateHeaderHolder(inflater, parent, timelineViewType)
-            else -> throw IllegalArgumentException("Unable to determine view type $viewType")
+            else -> throw IllegalArgumentException("Unable to recognize view type $viewType")
         }
     }
 
@@ -56,7 +67,11 @@ class ChronoAdapter(
         }
     }
 
-    private fun createChronoHolder(inflater: LayoutInflater, parent: ViewGroup, timelineViewType: Int): ChronoViewHolder {
+    private fun createChronoHolder(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        timelineViewType: Int,
+    ): ChronoViewHolder {
         val binding = ListItemChronoEntryBinding.inflate(inflater, parent, false)
         return ChronoViewHolder(binding, timelineViewType)
     }
@@ -68,21 +83,21 @@ class ChronoAdapter(
         holder.bind(entry.chronoEntry)
     }
 
-    private class ChronoViewHolder(
+    inner class ChronoViewHolder(
         private val binding: ListItemChronoEntryBinding,
         private val timelineViewType: Int,
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(entry: ChronoEntry) {
-            binding.titleTextView.text = entry.title
-            binding.timeTextView.text = DateFormat.format(DATE_PATTERN, entry.date)
+            binding.titleTextView.text = entry.text
+            binding.timeTextView.text = DateFormat.format(TIME_PATTERN, entry.date)
+            binding.timelineView.apply {
+                paint(R.color.black, timelineViewType)
+                setMarkerColor(ContextCompat.getColor(context, R.color.primary))
+            }
 
-            val lineColor = Color.BLACK
-            binding.timelineView.setEndLineColor(lineColor, timelineViewType)
-            binding.timelineView.setStartLineColor(lineColor, timelineViewType)
-        }
-
-        companion object {
-            private const val DATE_PATTERN = "HH:mm"
+            binding.root.setOnClickListener {
+                onEntryClicked(entry)
+            }
         }
     }
 
@@ -102,26 +117,26 @@ class ChronoAdapter(
         holder.bind(dateHeader.date)
     }
 
-    private class DateHeaderViewHolder(
+    class DateHeaderViewHolder(
         private val binding: ListItemDateHeaderBinding,
         private val timelineViewType: Int,
-    ): RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(date: Date) {
-            binding.dateTextView.text = DateFormat.format(DATE_PATTERN, date)
+            binding.dateTextView.text = DateFormat.format(DATE_PATTERN, date).toString()
+                .replaceFirstChar(Char::uppercase)
 
-            val lineColor = Color.BLACK
-            binding.timelineView.setEndLineColor(lineColor, timelineViewType)
-            binding.timelineView.setStartLineColor(lineColor, timelineViewType)
-        }
-
-        companion object {
-            private const val DATE_PATTERN = "EEE, dd MMM"
+            binding.timelineView.apply {
+                paint(R.color.black, timelineViewType)
+                setMarkerColor(ContextCompat.getColor(context, R.color.black))
+            }
         }
     }
 
     private fun List<ChronoEntry>.toDisplayableList(): List<Displayable> {
         val groupedByDate: Map<Date, List<ChronoEntry>> =
-            this.groupBy { chronoEntry -> chronoEntry.determineCalendarDate() }
+            groupBy { chronoEntry ->
+                chronoEntry.determineCalendarDate()
+            }.toSortedMap()
 
         return groupedByDate.keys.flatMap { date ->
             val section = mutableListOf<Displayable>()
@@ -149,9 +164,15 @@ class ChronoAdapter(
     }
 
     companion object {
-        // Must be 10 or higher since first rank is defined by TimeLineView.getTimeLineViewType()
-        private const val DISPLAYABLE_VIEW_TYPE_MULTIPLE = 10
-        private const val VIEW_TYPE_CHRONO_ENTRY = 1 * DISPLAYABLE_VIEW_TYPE_MULTIPLE
-        private const val VIEW_TYPE_DATE_HEADER = 2 * DISPLAYABLE_VIEW_TYPE_MULTIPLE
+        // Must be 10 or higher since last digit is defined by TimeLineView.getTimeLineViewType()
+        private const val DISPLAYABLE_VIEW_TYPE_MULTIPLIER = 10
+        private const val VIEW_TYPE_CHRONO_ENTRY = 1 * DISPLAYABLE_VIEW_TYPE_MULTIPLIER
+        private const val VIEW_TYPE_DATE_HEADER = 2 * DISPLAYABLE_VIEW_TYPE_MULTIPLIER
     }
+}
+
+private fun TimelineView.paint(@ColorRes color: Int, viewType: Int) {
+    val c = context ?: return
+    setStartLineColor(ContextCompat.getColor(c, color), viewType)
+    setEndLineColor(ContextCompat.getColor(c, color), viewType)
 }
