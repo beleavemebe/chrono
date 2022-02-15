@@ -2,7 +2,6 @@ package com.beleavemebe.chrono.ui.chrono.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.beleavemebe.chrono.databinding.ListItemChronoEntryBinding
@@ -12,31 +11,22 @@ import com.github.vipulasri.timelineview.TimelineView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.lang.UnsupportedOperationException
 import java.util.*
 
 class ChronoAdapter(
-    entries: List<ChronoEntry>,
-    scope: CoroutineScope,
+    private val scope: CoroutineScope,
     private val onEntryClicked: (ChronoEntry) -> Unit,
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private val items = mutableListOf<Displayable>()
-
-    init {
+) : ListAdapter<Displayable, RecyclerView.ViewHolder>(ChronoDiffCallback) {
+    fun setEntries(entries: List<ChronoEntry>) {
         scope.launch(Dispatchers.Default) {
-            items.addAll(entries.toDisplayableList())
+            val displayables = entries.toDisplayableList()
+            submitList(displayables)
         }
-    }
-
-    override fun getItemCount(): Int {
-        return items.size
     }
 
     override fun getItemViewType(position: Int): Int {
         val timeLineViewType = TimelineView.getTimeLineViewType(position, itemCount)
-        val displayableViewType = items[position].viewType
+        val displayableViewType = getItem(position).viewType
 
         return timeLineViewType + displayableViewType
     }
@@ -54,7 +44,7 @@ class ChronoAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = items[position]) {
+        when (val item = getItem(position)) {
             is Displayable.Entry -> bindChronoHolder(holder as ChronoViewHolder, item)
             is Displayable.DateHeader -> bindDateHeaderHolder(holder as DateHeaderViewHolder, item)
         }

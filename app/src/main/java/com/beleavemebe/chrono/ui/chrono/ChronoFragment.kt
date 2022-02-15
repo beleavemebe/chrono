@@ -22,8 +22,13 @@ import kotlinx.coroutines.flow.onEach
 
 class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     private val binding by viewBinding(FragmentChronoBinding::bind)
+
     private val viewModel by viewModels<ChronoViewModel> {
         ChronoViewModel.factory()
+    }
+
+    private val adapter by lazy {
+        ChronoAdapter(viewLifecycleOwner.lifecycleScope, ::editEntry)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +53,12 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initRecyclerView()
         subscribeToViewModel()
+    }
+
+    private fun initRecyclerView() {
+        binding.chronoRecyclerView.adapter = adapter
     }
 
     private fun subscribeToViewModel() {
@@ -59,8 +69,7 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     }
 
     private fun fillRecyclerView(list: List<ChronoEntry>) {
-        binding.chronoRecyclerView.adapter =
-            ChronoAdapter(list, lifecycleScope, ::editEntry)
+        adapter.setEntries(list)
     }
 
     private fun addEntry() {
