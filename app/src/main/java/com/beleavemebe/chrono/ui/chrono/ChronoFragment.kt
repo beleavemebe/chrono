@@ -16,6 +16,7 @@ import com.beleavemebe.chrono.model.ChronoEntry
 import com.beleavemebe.chrono.ui.chrono.addedit.AddChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.addedit.EditChronoEntryDialog
+import com.beleavemebe.chrono.ui.chrono.recycler.ChronoAdapter
 import com.beleavemebe.chrono.util.launchWhenStarted
 import kotlinx.coroutines.flow.onEach
 
