@@ -2,18 +2,18 @@ package com.beleavemebe.chrono.ui.chrono.recycler
 
 import androidx.recyclerview.widget.DiffUtil
 
-object ChronoDiffCallback : DiffUtil.ItemCallback<Displayable>() {
-    override fun areItemsTheSame(oldItem: Displayable, newItem: Displayable): Boolean {
+object ChronoDiffCallback : DiffUtil.ItemCallback<ChronoListItem>() {
+    override fun areItemsTheSame(oldItem: ChronoListItem, newItem: ChronoListItem): Boolean {
         return when (oldItem) {
-            is Displayable.DateHeader -> newItem is Displayable.DateHeader && newItem.date == oldItem.date
-            is Displayable.Entry -> newItem is Displayable.Entry && newItem.chronoEntry.id == oldItem.chronoEntry.id
+            is ChronoListItem.DateHeader -> newItem is ChronoListItem.DateHeader && newItem.date == oldItem.date
+            is ChronoListItem.Entry -> newItem is ChronoListItem.Entry && newItem.chronoEntry.id == oldItem.chronoEntry.id
         }
     }
 
-    override fun areContentsTheSame(oldItem: Displayable, newItem: Displayable): Boolean {
+    override fun areContentsTheSame(oldItem: ChronoListItem, newItem: ChronoListItem): Boolean {
         return when (oldItem) {
-            is Displayable.DateHeader -> newItem is Displayable.DateHeader && newItem.date == oldItem.date
-            is Displayable.Entry -> newItem is Displayable.Entry && newItem.chronoEntry == oldItem.chronoEntry
+            is ChronoListItem.DateHeader -> newItem is ChronoListItem.DateHeader && newItem.date == oldItem.date
+            is ChronoListItem.Entry -> newItem is ChronoListItem.Entry && newItem.chronoEntry == oldItem.chronoEntry
         }
     }
 }

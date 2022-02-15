@@ -16,27 +16,27 @@ import java.util.*
 class ChronoAdapter(
     private val scope: CoroutineScope,
     private val onEntryClicked: (ChronoEntry) -> Unit,
-) : ListAdapter<Displayable, RecyclerView.ViewHolder>(ChronoDiffCallback) {
+) : ListAdapter<ChronoListItem, RecyclerView.ViewHolder>(ChronoDiffCallback) {
     fun setEntries(entries: List<ChronoEntry>) {
         scope.launch(Dispatchers.Default) {
-            val displayables = entries.toDisplayableList()
-            submitList(displayables)
+            val items = entries.toChronoListItems()
+            submitList(items)
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        val timeLineViewType = TimelineView.getTimeLineViewType(position, itemCount)
-        val displayableViewType = getItem(position).viewType
+        val timelineViewType = TimelineView.getTimeLineViewType(position, itemCount)
+        val viewType = getItem(position).viewType
 
-        return timeLineViewType + displayableViewType
+        return timelineViewType + viewType
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val timelineViewType = viewType % DISPLAYABLE_VIEW_TYPE_MULTIPLIER
-        val displayableViewType = viewType - timelineViewType
+        val timelineViewType = viewType % VIEW_TYPE_MULTIPLIER
+        val itemViewType = viewType - timelineViewType
 
-        return when (displayableViewType) {
+        return when (itemViewType) {
             VIEW_TYPE_CHRONO_ENTRY -> createChronoHolder(inflater, parent, timelineViewType)
             VIEW_TYPE_DATE_HEADER -> createDateHeaderHolder(inflater, parent, timelineViewType)
             else -> throw IllegalArgumentException("Unable to recognize view type $viewType")
@@ -45,8 +45,8 @@ class ChronoAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is Displayable.Entry -> bindChronoHolder(holder as ChronoViewHolder, item)
-            is Displayable.DateHeader -> bindDateHeaderHolder(holder as DateHeaderViewHolder, item)
+            is ChronoListItem.Entry -> bindChronoHolder(holder as ChronoViewHolder, item)
+            is ChronoListItem.DateHeader -> bindDateHeaderHolder(holder as DateHeaderViewHolder, item)
         }
     }
 
@@ -61,7 +61,7 @@ class ChronoAdapter(
 
     private fun bindChronoHolder(
         holder: ChronoViewHolder,
-        entry: Displayable.Entry,
+        entry: ChronoListItem.Entry,
     ) {
         holder.bind(entry.chronoEntry)
     }
@@ -77,24 +77,24 @@ class ChronoAdapter(
 
     private fun bindDateHeaderHolder(
         holder: DateHeaderViewHolder,
-        dateHeader: Displayable.DateHeader,
+        dateHeader: ChronoListItem.DateHeader,
     ) {
         holder.bind(dateHeader.date)
     }
 
-    private fun List<ChronoEntry>.toDisplayableList(): List<Displayable> {
+    private fun List<ChronoEntry>.toChronoListItems(): List<ChronoListItem> {
         val groupedByDate: Map<Date, List<ChronoEntry>> =
             groupBy { chronoEntry ->
                 chronoEntry.determineCalendarDate()
             }.toSortedMap()
 
         return groupedByDate.keys.flatMap { date ->
-            val section = mutableListOf<Displayable>()
+            val section = mutableListOf<ChronoListItem>()
 
-            section += Displayable.DateHeader(date)
+            section += ChronoListItem.DateHeader(date)
             section += groupedByDate[date]
                 ?.sortedBy { it.date }
-                ?.map { Displayable.Entry(it) }
+                ?.map { ChronoListItem.Entry(it) }
                 ?: emptyList()
 
             section
@@ -115,8 +115,8 @@ class ChronoAdapter(
 
     companion object {
         // Must be 10 or higher since last digit is defined by TimeLineView.getTimeLineViewType()
-        const val DISPLAYABLE_VIEW_TYPE_MULTIPLIER = 10
-        const val VIEW_TYPE_CHRONO_ENTRY = 1 * DISPLAYABLE_VIEW_TYPE_MULTIPLIER
-        const val VIEW_TYPE_DATE_HEADER = 2 * DISPLAYABLE_VIEW_TYPE_MULTIPLIER
+        const val VIEW_TYPE_MULTIPLIER = 10
+        const val VIEW_TYPE_CHRONO_ENTRY = 1 * VIEW_TYPE_MULTIPLIER
+        const val VIEW_TYPE_DATE_HEADER = 2 * VIEW_TYPE_MULTIPLIER
     }
 }
