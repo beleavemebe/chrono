@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_chrono" />
     <fragment
         android:id="@+id/fragment_diary"
-        android:name="com.beleavemebe.chrono.ui.DiaryFragment"
+        android:name="com.beleavemebe.chrono.ui.diary.DiaryFragment"
         android:label="@string/diary"
         tools:layout="@layout/fragment_diary" />
 </navigation>
