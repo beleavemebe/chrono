@@ -49,7 +49,7 @@ class AddEditChronoEntryViewModel(
             uuid: UUID?
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return AddEditChronoEntryViewModel(
                     uuid,
                     ChronoRepository(),

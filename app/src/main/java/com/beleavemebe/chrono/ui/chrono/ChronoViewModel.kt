@@ -16,7 +16,7 @@ class ChronoViewModel(
     companion object {
         @Suppress("UNCHECKED_CAST")
         fun factory() = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ChronoViewModel(
                     ChronoRepository(),
                 ) as T
