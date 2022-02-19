@@ -1,7 +1,6 @@
 package com.beleavemebe.chrono.ui.chrono
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -70,7 +69,6 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     }
 
     private fun renderState(state: ChronoState) {
-        Log.d("ChronoFragment", "${state.hashCode()}")
         binding.progressBar.isVisible = state.isLoading
         binding.tvNoChronology.isVisible = !state.isLoading
         binding.chronoRecyclerView.isVisible = !state.isLoading
