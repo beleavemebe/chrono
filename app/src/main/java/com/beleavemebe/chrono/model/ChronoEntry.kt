@@ -6,8 +6,7 @@ import java.util.*
 
 @Entity(tableName = "chrono")
 data class ChronoEntry(
+    @PrimaryKey val id: UUID = UUID.randomUUID(),
     val text: String = "",
     val date: Date = Date(),
-) {
-    @PrimaryKey var id: UUID = UUID.randomUUID()
-}
+)
