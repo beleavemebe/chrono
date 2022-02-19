@@ -1,6 +1,5 @@
 package com.beleavemebe.chrono.ui.chrono
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.beleavemebe.chrono.model.ChronoEntry
@@ -14,6 +13,7 @@ import org.orbitmvi.orbit.viewmodel.container
 class ChronoViewModel(
     private val repository: ChronoRepository,
 ) : ViewModel(), ContainerHost<ChronoState, ChronoSideEffect> {
+
     override val container = container<ChronoState, ChronoSideEffect>(
         initialState = ChronoState(),
     ) {

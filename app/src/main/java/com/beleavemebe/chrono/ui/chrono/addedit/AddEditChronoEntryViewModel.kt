@@ -7,14 +7,24 @@ import com.beleavemebe.chrono.model.ChronoEntry
 import com.beleavemebe.chrono.repository.ChronoRepository
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import org.orbitmvi.orbit.ContainerHost
+import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.viewmodel.container
 import java.util.*
 
 class AddEditChronoEntryViewModel(
     private val entryId: UUID?,
     private val repository: ChronoRepository,
-) : ViewModel() {
+) : ViewModel(), ContainerHost<AddEditChronoState, Nothing> {
 
-    val entry = flow {
+    override val container = container<AddEditChronoState, Nothing>(
+        initialState = AddEditChronoState()
+    ) {
+        fetchEntry()
+    }
+
+    private val entryFlow = flow {
         val entry = if (entryId != null) {
             repository.getById(entryId)
         } else {
@@ -22,6 +32,14 @@ class AddEditChronoEntryViewModel(
         }
 
         emit(entry)
+    }
+
+    private fun fetchEntry() = intent {
+        entryFlow.collect { entry ->
+            reduce {
+                state.copy(chronoEntry = entry)
+            }
+        }
     }
 
     fun saveEntry(entry: ChronoEntry) {

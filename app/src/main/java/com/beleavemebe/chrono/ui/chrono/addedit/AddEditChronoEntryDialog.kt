@@ -9,14 +9,12 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.beleavemebe.chrono.R
 import com.beleavemebe.chrono.databinding.DialogAddEditChronoEntryBinding
 import com.beleavemebe.chrono.model.ChronoEntry
 import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog.Companion.ARG_ENTRY_ID
-import com.beleavemebe.chrono.util.launchWhenStarted
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.flow.onEach
+import org.orbitmvi.orbit.viewmodel.observe
 import java.util.*
 
 class AddEditChronoEntryDialog : BottomSheetDialogFragment() {
@@ -32,15 +30,25 @@ class AddEditChronoEntryDialog : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View {
         binding = DialogAddEditChronoEntryBinding.inflate(inflater, container, false)
-        subscribeToViewModel()
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        subscribeToViewModel()
+    }
+
     private fun subscribeToViewModel() {
-        viewModel.entry.onEach { entry ->
-            initListeners(entry)
-            renderUi(entry)
-        }.launchWhenStarted(viewLifecycleOwner.lifecycleScope)
+        viewModel.observe(
+            lifecycleOwner = viewLifecycleOwner,
+            state = ::renderState,
+        )
+    }
+
+    private fun renderState(state: AddEditChronoState) {
+        val entry = state.chronoEntry ?: return
+        initListeners(entry)
+        renderUi(entry)
     }
 
     private fun initListeners(entry: ChronoEntry) {
