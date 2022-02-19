@@ -6,12 +6,16 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.beleavemebe.chrono.databinding.ListItemChronoEntryBinding
 import com.beleavemebe.chrono.databinding.ListItemDateHeaderBinding
+import com.beleavemebe.chrono.databinding.ListItemTimeSpentHeaderBinding
 import com.beleavemebe.chrono.model.ChronoEntry
+import com.beleavemebe.chrono.util.ONE_AND_A_HALF_AN_HOUR
 import com.github.vipulasri.timelineview.TimelineView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.math.abs
 
 class ChronoAdapter(
     private val scope: CoroutineScope,
@@ -20,7 +24,9 @@ class ChronoAdapter(
     fun setEntries(entries: List<ChronoEntry>) {
         scope.launch(Dispatchers.Default) {
             val items = entries.toChronoListItems()
-            submitList(items)
+            withContext(Dispatchers.Main) {
+                submitList(items)
+            }
         }
     }
 
@@ -39,16 +45,17 @@ class ChronoAdapter(
         return when (itemViewType) {
             VIEW_TYPE_CHRONO_ENTRY -> createChronoHolder(inflater, parent, timelineViewType)
             VIEW_TYPE_DATE_HEADER -> createDateHeaderHolder(inflater, parent, timelineViewType)
+            VIEW_TYPE_TIME_SPENT_HEADER -> createTimeSpentHeaderHolder(inflater, parent, timelineViewType)
             else -> throw IllegalArgumentException("Unable to recognize view type $viewType")
         }
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
         when (val item = getItem(position)) {
-            is ChronoListItem.Entry -> bindChronoHolder(holder as ChronoViewHolder, item)
-            is ChronoListItem.DateHeader -> bindDateHeaderHolder(holder as DateHeaderViewHolder, item)
+            is ChronoListItem.Entry -> (holder as ChronoViewHolder).bind(item.chronoEntry)
+            is ChronoListItem.DateHeader -> (holder as DateHeaderViewHolder).bind(item.date)
+            is ChronoListItem.TimeSpentHeader -> (holder as TimeSpentHeaderViewHolder).bind(item.timeSpent)
         }
-    }
 
     private fun createChronoHolder(
         inflater: LayoutInflater,
@@ -57,13 +64,6 @@ class ChronoAdapter(
     ): ChronoViewHolder {
         val binding = ListItemChronoEntryBinding.inflate(inflater, parent, false)
         return ChronoViewHolder(binding, timelineViewType, onEntryClicked)
-    }
-
-    private fun bindChronoHolder(
-        holder: ChronoViewHolder,
-        entry: ChronoListItem.Entry,
-    ) {
-        holder.bind(entry.chronoEntry)
     }
 
     private fun createDateHeaderHolder(
@@ -75,11 +75,13 @@ class ChronoAdapter(
         return DateHeaderViewHolder(binding, timelineViewType)
     }
 
-    private fun bindDateHeaderHolder(
-        holder: DateHeaderViewHolder,
-        dateHeader: ChronoListItem.DateHeader,
-    ) {
-        holder.bind(dateHeader.date)
+    private fun createTimeSpentHeaderHolder(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        timelineViewType: Int
+    ): TimeSpentHeaderViewHolder {
+        val binding = ListItemTimeSpentHeaderBinding.inflate(inflater, parent, false)
+        return TimeSpentHeaderViewHolder(binding, timelineViewType)
     }
 
     private fun List<ChronoEntry>.toChronoListItems(): List<ChronoListItem> {
@@ -88,16 +90,39 @@ class ChronoAdapter(
                 chronoEntry.determineCalendarDate()
             }.toSortedMap()
 
-        return groupedByDate.keys.flatMap { date ->
+        val withDateHeaders = groupedByDate.keys.flatMap { date ->
             val section = mutableListOf<ChronoListItem>()
 
             section += ChronoListItem.DateHeader(date)
             section += groupedByDate[date]
                 ?.sortedBy { it.date }
                 ?.map { ChronoListItem.Entry(it) }
+
                 ?: emptyList()
 
             section
+        }
+
+        val withTimeSpentHeaders = withDateHeaders.toMutableList()
+        withDateHeaders.forEachIndexed { i, item ->
+            if (i == withDateHeaders.lastIndex) {
+                return@forEachIndexed
+            }
+
+            val next = withDateHeaders[i + 1]
+            if (item !is ChronoListItem.Entry || next !is ChronoListItem.Entry) {
+                return@forEachIndexed
+            }
+
+            val diff = abs(item.chronoEntry.date.time - next.chronoEntry.date.time)
+            if (diff > ONE_AND_A_HALF_AN_HOUR) {
+                val targetIndex = withTimeSpentHeaders.indexOf(item) + 1
+                withTimeSpentHeaders.add(targetIndex, ChronoListItem.TimeSpentHeader(diff))
+            }
+        }
+
+        return withTimeSpentHeaders.also {
+            println(it)
         }
     }
 
@@ -118,5 +143,6 @@ class ChronoAdapter(
         const val VIEW_TYPE_MULTIPLIER = 10
         const val VIEW_TYPE_CHRONO_ENTRY = 1 * VIEW_TYPE_MULTIPLIER
         const val VIEW_TYPE_DATE_HEADER = 2 * VIEW_TYPE_MULTIPLIER
+        const val VIEW_TYPE_TIME_SPENT_HEADER = 3 * VIEW_TYPE_MULTIPLIER
     }
 }
