@@ -17,8 +17,7 @@ import com.beleavemebe.chrono.ui.chrono.addedit.AddChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.addedit.EditChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.recycler.ChronoAdapter
-import com.beleavemebe.chrono.util.launchWhenStarted
-import kotlinx.coroutines.flow.onEach
+import org.orbitmvi.orbit.viewmodel.observe
 
 class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     private val binding by viewBinding(FragmentChronoBinding::bind)
@@ -28,7 +27,7 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     }
 
     private val adapter by lazy {
-        ChronoAdapter(viewLifecycleOwner.lifecycleScope, ::editEntry)
+        ChronoAdapter(viewLifecycleOwner.lifecycleScope, viewModel::editEntry)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +43,7 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.new_entry -> {
-                addEntry()
+                viewModel.addEntry()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -62,22 +61,41 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     }
 
     private fun subscribeToViewModel() {
-        viewModel.entries.onEach { entries ->
-            binding.tvNoChronology.isVisible = entries.isEmpty()
-            fillRecyclerView(entries)
-        }.launchWhenStarted(viewLifecycleOwner.lifecycleScope)
+        viewModel.observe(
+            lifecycleOwner = viewLifecycleOwner,
+            state = ::renderState,
+            sideEffect = ::handleSideEffect
+        )
     }
 
-    private fun fillRecyclerView(list: List<ChronoEntry>) {
-        adapter.setEntries(list)
+    private fun renderState(state: ChronoState) {
+        binding.progressBar.isVisible = state.isLoading
+        binding.tvNoChronology.isVisible = !state.isLoading
+        binding.chronoRecyclerView.isVisible = !state.isLoading
+        if (!state.isLoading) {
+            binding.tvNoChronology.isVisible = state.entries.isEmpty()
+            adapter.setEntries(state.entries)
+        }
     }
 
-    private fun addEntry() {
+    private fun handleSideEffect(sideEffect: ChronoSideEffect) =
+        when (sideEffect) {
+            is ChronoSideEffect.ScrollToBottom -> scrollToBottom()
+            is ChronoSideEffect.AddEntry -> showNewEntryDialog()
+            is ChronoSideEffect.EditEntry -> showEditEntryDialog(sideEffect.chronoEntry)
+        }
+
+    private fun scrollToBottom() {
+        val count = adapter.itemCount
+        binding.chronoRecyclerView.smoothScrollToPosition(count)
+    }
+
+    private fun showNewEntryDialog() {
         val dialog = AddChronoEntryDialog()
         dialog.show(childFragmentManager, AddEditChronoEntryDialog.TAG)
     }
 
-    private fun editEntry(chronoEntry: ChronoEntry) {
+    private fun showEditEntryDialog(chronoEntry: ChronoEntry) {
         val dialog = EditChronoEntryDialog(chronoEntry)
         dialog.show(childFragmentManager, AddEditChronoEntryDialog.TAG)
     }

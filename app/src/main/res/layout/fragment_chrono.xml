@@ -21,4 +21,12 @@
         android:layout_gravity="center"
         android:text="@string/no_chronology"
         android:visibility="invisible" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:indeterminateTint="@color/primary"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
 </FrameLayout>
