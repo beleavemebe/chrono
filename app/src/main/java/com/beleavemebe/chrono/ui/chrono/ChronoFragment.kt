@@ -78,11 +78,16 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
         }
     }
 
-    private fun handleSideEffect(sideEffect: ChronoSideEffect) {
+    private fun handleSideEffect(sideEffect: ChronoSideEffect) =
         when (sideEffect) {
+            is ChronoSideEffect.ScrollToBottom -> scrollToBottom()
             is ChronoSideEffect.AddEntry -> showNewEntryDialog()
             is ChronoSideEffect.EditEntry -> showEditEntryDialog(sideEffect.chronoEntry)
         }
+
+    private fun scrollToBottom() {
+        val count = adapter.itemCount
+        binding.chronoRecyclerView.smoothScrollToPosition(count)
     }
 
     private fun showNewEntryDialog() {

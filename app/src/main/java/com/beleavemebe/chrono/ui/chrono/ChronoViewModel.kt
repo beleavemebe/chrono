@@ -21,10 +21,18 @@ class ChronoViewModel(
     }
 
     private fun subscribeToRepo() = intent {
-        repository.getAll().collect { list ->
+        repository.getAll().collect { entries ->
+            val shouldScrollToBottom = runCatching {
+                state.entries.first() != entries.first()
+            }
+                .getOrDefault(false)
+
             reduce {
-                Log.d("ChronoViewModel", "got list ${list.hashCode()}")
-                state.copy(isLoading = false, entries = list)
+                state.copy(isLoading = false, entries = entries)
+            }
+
+            if (shouldScrollToBottom) {
+                postSideEffect(ChronoSideEffect.ScrollToBottom)
             }
         }
     }
