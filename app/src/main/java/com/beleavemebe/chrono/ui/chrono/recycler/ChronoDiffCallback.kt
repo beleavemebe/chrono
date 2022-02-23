@@ -14,8 +14,8 @@ object ChronoDiffCallback : DiffUtil.ItemCallback<ChronoListItem>() {
     override fun areContentsTheSame(oldItem: ChronoListItem, newItem: ChronoListItem): Boolean {
         return when (oldItem) {
             is ChronoListItem.Entry -> newItem is ChronoListItem.Entry && newItem.chronoEntry == oldItem.chronoEntry
-            is ChronoListItem.DateHeader -> areItemsTheSame(oldItem, newItem)
-            is ChronoListItem.TimeSpentHeader -> areItemsTheSame(oldItem, newItem)
+            is ChronoListItem.DateHeader -> false
+            is ChronoListItem.TimeSpentHeader -> false
         }
     }
 }
