@@ -17,14 +17,14 @@ import com.beleavemebe.chrono.ui.chrono.addedit.AddChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.addedit.EditChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.recycler.ChronoAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import org.orbitmvi.orbit.viewmodel.observe
 
+@AndroidEntryPoint
 class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     private val binding by viewBinding(FragmentChronoBinding::bind)
 
-    private val viewModel by viewModels<ChronoViewModel> {
-        ChronoViewModel.factory()
-    }
+    private val viewModel: ChronoViewModel by viewModels()
 
     private val adapter by lazy {
         ChronoAdapter(viewLifecycleOwner.lifecycleScope, viewModel::editEntry)

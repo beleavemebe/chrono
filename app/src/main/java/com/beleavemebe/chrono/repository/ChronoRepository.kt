@@ -3,9 +3,12 @@ package com.beleavemebe.chrono.repository
 import com.beleavemebe.chrono.db.AppDatabase
 import com.beleavemebe.chrono.model.ChronoEntry
 import java.util.*
+import javax.inject.Inject
 
-class ChronoRepository {
-    private val dao = AppDatabase.instance.chronoDao()
+class ChronoRepository @Inject constructor(
+    database: AppDatabase,
+) {
+    private val dao = database.chronoDao()
 
     fun getAll() = dao.getAll()
 
