@@ -9,13 +9,11 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.beleavemebe.chrono.R
 import com.beleavemebe.chrono.databinding.FragmentChronoBinding
 import com.beleavemebe.chrono.model.ChronoEntry
-import com.beleavemebe.chrono.ui.chrono.addedit.AddChronoEntryDialog
-import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog
-import com.beleavemebe.chrono.ui.chrono.addedit.EditChronoEntryDialog
 import com.beleavemebe.chrono.ui.chrono.recycler.ChronoAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import org.orbitmvi.orbit.viewmodel.observe
@@ -91,12 +89,18 @@ class ChronoFragment : Fragment(R.layout.fragment_chrono) {
     }
 
     private fun showNewEntryDialog() {
-        val dialog = AddChronoEntryDialog()
-        dialog.show(childFragmentManager, AddEditChronoEntryDialog.TAG)
+        findNavController().navigate(
+            ChronoFragmentDirections.actionFragmentChronoToDialogAddEditChronoEntry(
+                null
+            )
+        )
     }
 
     private fun showEditEntryDialog(chronoEntry: ChronoEntry) {
-        val dialog = EditChronoEntryDialog(chronoEntry)
-        dialog.show(childFragmentManager, AddEditChronoEntryDialog.TAG)
+        findNavController().navigate(
+            ChronoFragmentDirections.actionFragmentChronoToDialogAddEditChronoEntry(
+                chronoEntry.id
+            )
+        )
     }
 }

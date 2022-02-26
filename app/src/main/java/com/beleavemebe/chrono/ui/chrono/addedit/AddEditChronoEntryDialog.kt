@@ -1,31 +1,30 @@
-@file:Suppress("FunctionName")
-
 package com.beleavemebe.chrono.ui.chrono.addedit
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
 import com.beleavemebe.chrono.R
 import com.beleavemebe.chrono.databinding.DialogAddEditChronoEntryBinding
 import com.beleavemebe.chrono.model.ChronoEntry
-import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog.Companion.ARG_ENTRY_ID
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.orbitmvi.orbit.viewmodel.observe
-import java.util.*
 
 @AndroidEntryPoint
 class AddEditChronoEntryDialog : BottomSheetDialogFragment() {
-    private lateinit var binding: DialogAddEditChronoEntryBinding
+    private var _binding: DialogAddEditChronoEntryBinding? = null
+    private val binding get() = _binding!!
+
+    private val args: AddEditChronoEntryDialogArgs by navArgs()
 
     private val viewModel by lazy {
         val viewModel: AddEditChronoEntryViewModel by viewModels()
         viewModel.apply {
-            entryId = arguments?.get(ARG_ENTRY_ID) as? UUID
+            entryId = args.id
         }
     }
 
@@ -34,7 +33,9 @@ class AddEditChronoEntryDialog : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        binding = DialogAddEditChronoEntryBinding.inflate(inflater, container, false)
+        _binding = DialogAddEditChronoEntryBinding
+            .inflate(inflater, container, false)
+
         return binding.root
     }
 
@@ -84,14 +85,8 @@ class AddEditChronoEntryDialog : BottomSheetDialogFragment() {
         binding.etEntryText.setText(entry.text)
     }
 
-    companion object {
-        const val ARG_ENTRY_ID = "entry_id"
-        const val TAG = "AddEditChronoEntryDialog"
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
-}
-
-fun AddChronoEntryDialog() = AddEditChronoEntryDialog()
-
-fun EditChronoEntryDialog(entry: ChronoEntry) = AddEditChronoEntryDialog().apply {
-    arguments = bundleOf(ARG_ENTRY_ID to entry.id)
 }

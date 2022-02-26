@@ -9,10 +9,23 @@
         android:id="@+id/fragment_chrono"
         android:name="com.beleavemebe.chrono.ui.chrono.ChronoFragment"
         android:label="@string/chrono"
-        tools:layout="@layout/fragment_chrono" />
+        tools:layout="@layout/fragment_chrono" >
+        <action
+            android:id="@+id/action_fragment_chrono_to_dialog_add_edit_chrono_entry"
+            app:destination="@id/dialog_add_edit_chrono_entry" />
+    </fragment>
     <fragment
         android:id="@+id/fragment_diary"
         android:name="com.beleavemebe.chrono.ui.diary.DiaryFragment"
         android:label="@string/diary"
         tools:layout="@layout/fragment_diary" />
+
+    <dialog
+        android:id="@+id/dialog_add_edit_chrono_entry"
+        android:name="com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog"
+        tools:layout="@layout/dialog_add_edit_chrono_entry">
+        <argument android:name="id"
+            app:argType="java.util.UUID"
+            app:nullable="true" />
+    </dialog>
 </navigation>
