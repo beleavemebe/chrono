@@ -14,14 +14,19 @@ import com.beleavemebe.chrono.databinding.DialogAddEditChronoEntryBinding
 import com.beleavemebe.chrono.model.ChronoEntry
 import com.beleavemebe.chrono.ui.chrono.addedit.AddEditChronoEntryDialog.Companion.ARG_ENTRY_ID
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 import org.orbitmvi.orbit.viewmodel.observe
 import java.util.*
 
+@AndroidEntryPoint
 class AddEditChronoEntryDialog : BottomSheetDialogFragment() {
     private lateinit var binding: DialogAddEditChronoEntryBinding
-    private val viewModel by viewModels<AddEditChronoEntryViewModel> {
-        val id = arguments?.get(ARG_ENTRY_ID) as? UUID
-        AddEditChronoEntryViewModel.factory(id)
+
+    private val viewModel by lazy {
+        val viewModel: AddEditChronoEntryViewModel by viewModels()
+        viewModel.apply {
+            entryId = arguments?.get(ARG_ENTRY_ID) as? UUID
+        }
     }
 
     override fun onCreateView(
